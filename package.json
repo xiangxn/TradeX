@@ -1,4 +1,30 @@
 {
   "name": "trader",
-  "packageManager": "yarn@4.5.2"
+  "scripts": {
+    "start": "tsc && node dist/index.js",
+    "dev": "ts-node -r global-agent/bootstrap src/index.ts",
+    "dev:proxy": "cross-env GLOBAL_AGENT_HTTP_PROXY=http://127.0.0.1:1087 yarn dev",
+    "build": "tsc",
+    "clean": "rm -rf dist && rm -rf logs"
+  },
+  "packageManager": "yarn@4.5.2",
+  "devDependencies": {
+    "@types/express": "^5",
+    "@types/global-agent": "^3",
+    "@types/node": "^22.14.1",
+    "@types/openurl": "^1",
+    "cross-env": "^7.0.3",
+    "express": "^5.1.0",
+    "global-agent": "^3.0.0",
+    "openurl": "^1.1.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "ccxt": "^4.4.77",
+    "csv-parse": "^5.6.0",
+    "log4js": "^6.9.1",
+    "moment": "^2.30.1",
+    "technicalindicators": "^3.1.0"
+  }
 }

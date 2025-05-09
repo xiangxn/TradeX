@@ -1,0 +1,15 @@
+/* src/report/static/style.css */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+#stats p {
+    font-size: 16px;
+    margin: 4px 0;
+}
+
+canvas {
+    margin-top: 20px;
+    touch-action: none;
+}

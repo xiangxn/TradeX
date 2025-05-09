@@ -1,0 +1,90 @@
+import { eventBus } from '../core/event-bus';
+import { BaseFeed } from '../feed/base-feed';
+import { BaseBroker } from '../broker/base-broker';
+import { BuySell, KlineData, Order } from '../utils/types';
+import { Indicator, IndicatorValue } from '../indicator/base-indicator';
+
+interface StrategyOptions {
+    indicators?: Indicator[];
+}
+
+export abstract class BaseStrategy {
+    protected broker?: BaseBroker;
+    protected feed?: BaseFeed;
+    protected order?: Order;
+    protected indicators: Map<string, Indicator> = new Map();
+    private inited: boolean = false;
+
+    constructor(options?: StrategyOptions) {
+        if (options?.indicators) {
+            for (const indicator of options.indicators) {
+                this.indicators.set(indicator.name, indicator);
+            }
+        }
+    }
+
+    abstract update(data: KlineData): void;
+    protected onPrice(price: number): void { }
+
+    private onCandle(data: KlineData): void {
+        for (const indicator of this.indicators.values()) {
+            indicator.update(data.candle);
+        }
+        this.update(data);
+    }
+
+    onOrderFill(order: Order): void {
+        this.order = order;
+    }
+
+    async onInit(): Promise<void> {
+        let maxPeriod = 0;
+        for (const indicator of this.indicators.values()) {
+            const p = indicator.period ?? 0
+            if (p > maxPeriod) maxPeriod = p;
+        }
+        if (maxPeriod > 0) {
+            let datas = await this.feed?.fetchHistoricalOHLCV(this.feed.exchangeId, this.feed.symbol, this.feed.timeframe, maxPeriod)
+            if (datas) {
+                for (const data of datas) {
+                    for (const indicator of this.indicators.values()) {
+                        indicator.update(data);
+                    }
+                }
+            }
+        }
+    };
+
+    async init(broker: BaseBroker, feed: BaseFeed): Promise<void> {
+        if (this.inited) return
+        this.broker = broker
+        this.feed = feed
+        eventBus.on('candle', this.onCandle.bind(this))
+        eventBus.on('price', this.onPrice.bind(this))
+        eventBus.on('order:filled', this.onOrderFill.bind(this))
+        await this.onInit() // 可以初始化余额与持仓
+        this.inited = true
+    }
+
+    buy(params: BuySell): void {
+        console.info("Buy:", params);
+        eventBus.emit("signal:buy", params);
+    }
+
+    sell(params: BuySell): void {
+        console.info("Sell:", params);
+        eventBus.emit("signal:sell", params);
+    }
+
+    public getIndicator<T = IndicatorValue>(name: string): T[] {
+        return this.indicators.get(name)?.values as T[];
+    }
+
+    public addIndicator(indicator: Indicator): void {
+        this.indicators.set(indicator.name, indicator);
+    }
+
+    public getIndicators(): Map<string, Indicator> {
+        return this.indicators;
+    }
+}
