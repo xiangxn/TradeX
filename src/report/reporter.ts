@@ -4,13 +4,17 @@ import express from 'express';
 import openurl from 'openurl';
 import { DataStats } from '../utils/types';
 
+const staticDir = path.join(__dirname, 'static');
+
 export async function generateReport(data: DataStats) {
-    const staticDir = path.join(__dirname, 'static');
+    
     const reportPath = path.join(staticDir, 'report.json');
     fs.writeFileSync(reportPath, JSON.stringify(data, null, 2));
 
-    // const open = await import('open');
+    await showReport();
+}
 
+export async function showReport() {
     const app = express();
     app.use(express.static(staticDir));
 
