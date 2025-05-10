@@ -6,7 +6,8 @@ fetch('report.json')
             ? ((data.winTrades / (data.winTrades + data.loseTrades)) * 100).toFixed(2)
             : '0.00';
         document.getElementById('stats').innerText =
-            `Initial: ${parseFloat(data.initialBalance.toFixed(4))}, Final: ${parseFloat(data.finalBalance.toFixed(4))}, Fees: ${parseFloat(data.fees.toFixed(4))}, Wins: ${data.winTrades}, Losses: ${data.loseTrades}, Win Rate: ${winRate}%`;
+            `Initial: ${parseFloat(data.initialBalance.toFixed(4))}, Final: ${parseFloat(data.finalBalance.toFixed(4))}, Fees: ${parseFloat(data.fees.toFixed(4))}, Wins: ${data.winTrades}, Losses: ${data.loseTrades}, WinRate: ${winRate}%
+            AVGProfit: ${parseFloat(data.averageProfit.toFixed(4))}, AVGLoss: ${parseFloat(data.averageLoss.toFixed(4))}, ProfitFactor: ${parseFloat(data.profitFactor.toFixed(2))}, MDD: ${parseFloat(data.maxDrawdown.toFixed(2))}%`;
 
         const time = data.lines.map(d => d.time);
         const open = data.lines.map(d => d.open);
@@ -84,9 +85,9 @@ fetch('report.json')
 
         const layout = {
             grid: { rows: 3, columns: 1, subplots: [['xy'], ['xy2'], ['xy3']], roworder: 'top to bottom' },
-            yaxis: { title: 'Equity', domain: [0.8, 1],fixedrange: false },
-            yaxis2: { title: 'Price / Indicators', domain: [0.3, 0.8],fixedrange: false },
-            yaxis3: { title: 'Volume', domain: [0, 0.3],fixedrange: false },
+            yaxis: { title: 'Equity', domain: [0.8, 1], fixedrange: false },
+            yaxis2: { title: 'Price / Indicators', domain: [0.3, 0.8], fixedrange: false },
+            yaxis3: { title: 'Volume', domain: [0, 0.3], fixedrange: false },
             height: 900,
             margin: {
                 t: 20,

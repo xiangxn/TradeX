@@ -1,6 +1,7 @@
 import { BollingerBands } from "technicalindicators";
 import { Candle } from "../utils/types";
 import { Indicator, IndicatorValue } from "./base-indicator";
+import { getTime } from "../utils/helper";
 
 export class BollingerIndicator implements Indicator {
     name: string;

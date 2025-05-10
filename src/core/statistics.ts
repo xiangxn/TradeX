@@ -7,8 +7,8 @@ import moment from "moment"
 export class Statistics {
     private initialBalance = 0;
     private finalBalance = 0;
-    private winTrades = 0;
-    private loseTrades = 0;
+    private winTrades: number[] = [];
+    private loseTrades: number[] = [];
     private lastOrder: Order | null = null;
     private quote: string;
     private fees = 0;
@@ -62,18 +62,13 @@ export class Statistics {
             let pnl = 0;
             if (this.lastOrder.side === 'buy') {
                 pnl = (order.price - this.lastOrder.price) * order.amount;
-                if (pnl > 0) {
-                    this.winTrades++;
-                } else {
-                    this.loseTrades++;
-                }
             } else {
                 pnl = (this.lastOrder.price - order.price) * order.amount;
-                if (pnl > 0) {
-                    this.winTrades++;
-                } else {
-                    this.loseTrades++;
-                }
+            }
+            if (pnl >= 0) {
+                this.winTrades.push(pnl);
+            } else {
+                this.loseTrades.push(pnl);
             }
             this.lastOrder = null;
         }
@@ -126,14 +121,32 @@ export class Statistics {
             })
         }
 
+        const grossProfit = this.winTrades.reduce((a, b) => a + b, 0)
+        const grossLoss = this.loseTrades.reduce((a, b) => Math.abs(a) + Math.abs(b), 0)
+
         return {
             initialBalance: this.initialBalance,
             finalBalance: this.finalBalance,
-            winTrades: this.winTrades,
-            loseTrades: this.loseTrades,
+            winTrades: this.winTrades.length,
+            loseTrades: this.loseTrades.length,
+            averageProfit: grossProfit / this.winTrades.length,
+            averageLoss: grossLoss / this.loseTrades.length,
+            profitFactor: grossProfit / grossLoss,
+            maxDrawdown: this.caclMaxDrawdown(),
             fees: this.fees,
             lines: this.lines
         };
+    }
+
+    caclMaxDrawdown() {
+        let peak = this.equityCurve[0].value;
+        let maxDrawdown = 0;
+        for (const ec of this.equityCurve) {
+            if (ec.value > peak) peak = ec.value;
+            const drawdown = (peak - ec.value) / peak;
+            if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+        }
+        return maxDrawdown * 100
     }
 
     mergeIndicators(line: Line, indicators: Map<string, Indicator>, index: number, linesCount: number) {

@@ -5,7 +5,7 @@ import { eventBus } from "../core/event-bus"
 export abstract class BaseFeed {
     protected exchange: any;
     public symbol: string;
-    public timeframe: string;
+    protected timeframe: string;
     protected lastTimestamp: number;
     protected lastPrice: number;
     public data: Candle[];
@@ -30,8 +30,8 @@ export abstract class BaseFeed {
         eventBus.emit("candle", data)
     }
 
-    protected emitPrice(price: number): void {
-        eventBus.emit("price", price)
+    protected emitPrice(price: number, timestamp: number): void {
+        eventBus.emit("price", price, timestamp)
     }
 
     public stop(): void {
@@ -40,6 +40,10 @@ export abstract class BaseFeed {
 
     public setData(data: Candle[]) {
         this.data = data
+    }
+
+    public getTimeframe() {
+        return this.timeframe
     }
 
     public async init(): Promise<void> { }

@@ -3,6 +3,7 @@ import { BaseFeed } from '../feed/base-feed';
 import { BaseBroker } from '../broker/base-broker';
 import { BuySell, KlineData, Order } from '../utils/types';
 import { Indicator, IndicatorValue } from '../indicator/base-indicator';
+import { getAggregateMs, getTime } from '../utils/helper';
 
 interface StrategyOptions {
     indicators?: Indicator[];
@@ -24,7 +25,7 @@ export abstract class BaseStrategy {
     }
 
     abstract update(data: KlineData): void;
-    protected onPrice(price: number): void { }
+    protected onPrice(price: number, timestamp: number): void { }
 
     private onCandle(data: KlineData): void {
         for (const indicator of this.indicators.values()) {
@@ -44,7 +45,7 @@ export abstract class BaseStrategy {
             if (p > maxPeriod) maxPeriod = p;
         }
         if (maxPeriod > 0) {
-            let datas = await this.feed?.fetchHistoricalOHLCV(this.feed.exchangeId, this.feed.symbol, this.feed.timeframe, maxPeriod)
+            let datas = await this.feed?.fetchHistoricalOHLCV(this.feed.exchangeId, this.feed.symbol, this.feed.getTimeframe(), maxPeriod)
             if (datas) {
                 for (const data of datas) {
                     for (const indicator of this.indicators.values()) {
@@ -67,13 +68,18 @@ export abstract class BaseStrategy {
     }
 
     buy(params: BuySell): void {
-        console.info("Buy:", params);
-        eventBus.emit("signal:buy", params);
+        console.info("Buy:", { ...params, timestamp: getTime(params.timestamp) });
+        eventBus.emit("signal:buy", { ...params, timestamp: this.alignmentTime(params.timestamp) });
     }
 
     sell(params: BuySell): void {
-        console.info("Sell:", params);
-        eventBus.emit("signal:sell", params);
+        console.info("Sell:", { ...params, timestamp: getTime(params.timestamp) });
+        eventBus.emit("signal:sell", { ...params, timestamp: this.alignmentTime(params.timestamp) });
+    }
+
+    private alignmentTime(timestamp: number) {
+        const timeframe = getAggregateMs(this.feed!.getTimeframe())
+        return Math.floor(timestamp / timeframe) * timeframe
     }
 
     public getIndicator<T = IndicatorValue>(name: string): T[] {

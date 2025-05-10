@@ -20,7 +20,7 @@ export class CCXTFeed extends BaseFeed {
         }
         if (last[4] !== this.lastPrice) {
           this.lastPrice = last[4];
-          this.emitPrice(this.lastPrice);
+          this.emitPrice(this.lastPrice, last[0]);
         }
       } catch (err) {
         console.error('[CCXTFeed] Error:', err);
