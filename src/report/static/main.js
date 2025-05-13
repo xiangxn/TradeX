@@ -1,3 +1,11 @@
+function formatBalance(balances) {
+    let str = ""
+    for (const [symbol, value] of Object.entries(balances)) {
+        str += `${parseFloat(value.toFixed(4))}${symbol} `
+    }
+    return str
+}
+
 fetch('report.json')
     .then(response => response.json())
     .then(data => {
@@ -6,7 +14,8 @@ fetch('report.json')
             ? ((data.winTrades / (data.winTrades + data.loseTrades)) * 100).toFixed(2)
             : '0.00';
         document.getElementById('stats').innerText =
-            `Initial: ${parseFloat(data.initialBalance.toFixed(4))}, Final: ${parseFloat(data.finalBalance.toFixed(4))}, Fees: ${parseFloat(data.fees.toFixed(4))}, Wins: ${data.winTrades}, Losses: ${data.loseTrades}, WinRate: ${winRate}%
+            `Initial: ${formatBalance(data.initialBalance)}, Final: ${formatBalance(data.finalBalance)}, 
+            Fees: ${parseFloat(data.fees.toFixed(4))}, Wins: ${data.winTrades}, Losses: ${data.loseTrades}, WinRate: ${winRate}%
             AVGProfit: ${parseFloat(data.averageProfit.toFixed(4))}, AVGLoss: ${parseFloat(data.averageLoss.toFixed(4))}, ProfitFactor: ${parseFloat(data.profitFactor.toFixed(2))}, MDD: ${parseFloat(data.maxDrawdown.toFixed(2))}%`;
 
         const time = data.lines.map(d => d.time);
@@ -14,7 +23,7 @@ fetch('report.json')
         const close = data.lines.map(d => d.close);
         const low = data.lines.map(d => d.low);
         const high = data.lines.map(d => d.high);
-        const equity = data.lines.map(d => d.equity);
+        const equitys = data.lines.map(d => d.equity);
         const volume = data.lines.map(d => d.volume);
 
         // 根据涨跌分颜色
@@ -24,14 +33,6 @@ fetch('report.json')
         const indicatorKeys = Object.keys(data.lines[0]).filter(k => !excludeKeys.includes(k));
 
         const traces = [
-            {
-                x: time,
-                y: equity,
-                name: 'Equity',
-                mode: 'lines',
-                line: { color: 'blue' },
-                yaxis: 'y1'
-            },
             {
                 name: "Candle",
                 x: time,
@@ -53,6 +54,18 @@ fetch('report.json')
                 yaxis: 'y3'
             }
         ];
+
+        // 绘制余额
+        const equityKeys = Object.keys(equitys[0])
+        equityKeys.forEach(key => {
+            traces.push({
+                x: time,
+                y: equitys.map(e => e[key]),
+                name: key,
+                mode: 'lines',
+                yaxis: 'y1'
+            });
+        })
 
         indicatorKeys.forEach(key => {
             traces.push({

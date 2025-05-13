@@ -2,11 +2,10 @@ import { Indicator } from "../indicator/base-indicator";
 import { getTime } from "../utils/helper";
 import { BalanceItem, Balances, KlineData, Order, Trade, DataStats, Line } from "../utils/types";
 import { eventBus } from "./event-bus"
-import moment from "moment"
 
 export class Statistics {
-    private initialBalance = 0;
-    private finalBalance = 0;
+    private initialBalance: Balances = {};
+    private finalBalance: Balances = {};
     private winTrades: number[] = [];
     private loseTrades: number[] = [];
     private lastOrder: Order | null = null;
@@ -25,14 +24,15 @@ export class Statistics {
         eventBus.on('balance:update', this.onBalanceUpdate.bind(this));
         eventBus.on('candle', this.onCandle.bind(this))
         eventBus.on('balance:init', (balances: Balances) => {
-            this.initialBalance = balances[this.quote]
-            this.finalBalance = balances[this.quote]
+            this.initialBalance = balances
+            this.finalBalance = balances
             this.equityCurve.push({ time: "", value: this.finalBalance })
         });
     }
 
     private onCandle(data: KlineData) {
-        let time = getTime(data.candle.timestamp)
+        const timestamp = this.engine.alignmentTime(data.candle.timestamp)
+        let time = getTime(timestamp)
         this.lines.push({
             time,
             open: data.candle.open,
@@ -42,7 +42,7 @@ export class Statistics {
             volume: data.candle.volume,
             buy: false,
             sell: false,
-            equity: 0,
+            equity: {},
             price: 0
         })
     }
@@ -81,12 +81,12 @@ export class Statistics {
     }
 
     onBalanceUpdate(timestamp: number, balances: Balances) {
-        this.finalBalance = balances[this.quote]
+        this.finalBalance = balances
         this.equityCurve.push({
             time: getTime(timestamp),
-            value: this.finalBalance
+            value: { ...this.finalBalance }
         });
-        console.info('Balance Update:', balances[this.quote]);
+        console.info('Balance Update:', balances);
     }
 
     generateReport(): DataStats {
@@ -104,13 +104,13 @@ export class Statistics {
         }
         // 合并余额数据
         this.equityCurve[0].time = this.lines[0].time;
-        let equity = 0
+        let equity = {}
         for (const l of this.lines) {
             const index = this.equityCurve.findIndex((v) => v.time === l.time);
             if (index > -1) {
-                equity = this.equityCurve[index].value
+                equity = { ...this.equityCurve[index].value }
             }
-            l.equity = equity;
+            l.equity = { ...equity }
         }
         // 合并指标数据
         const strategies = this.engine.getStrategies();
@@ -139,11 +139,11 @@ export class Statistics {
     }
 
     caclMaxDrawdown() {
-        let peak = this.equityCurve[0].value;
+        let peak = this.equityCurve[0].value[this.quote];
         let maxDrawdown = 0;
         for (const ec of this.equityCurve) {
-            if (ec.value > peak) peak = ec.value;
-            const drawdown = (peak - ec.value) / peak;
+            if (ec.value[this.quote] > peak) peak = ec.value[this.quote];
+            const drawdown = (peak - ec.value[this.quote]) / peak;
             if (drawdown > maxDrawdown) maxDrawdown = drawdown;
         }
         return maxDrawdown * 100

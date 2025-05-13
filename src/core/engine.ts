@@ -3,6 +3,7 @@ import { BaseStrategy } from '../strategies/base-strategy';
 import { generateReport } from '../report/reporter';
 import { Statistics } from './statistics';
 import { BaseFeed } from '../feed/base-feed';
+import { getAggregateMs } from '../utils/helper';
 
 type ClassWithArgs<T> = [new (...args: any[]) => T, ...any[]];
 
@@ -47,6 +48,11 @@ export class Engine<
 
   public getStrategies() {
     return this.strategies;
+  }
+
+  public alignmentTime(timestamp: number) {
+    const timeframe = getAggregateMs(this.feed.getTimeframe())
+    return Math.floor(timestamp / timeframe) * timeframe
   }
 
   public addStrategy(strategy: ClassWithArgs<TStrategy>) {

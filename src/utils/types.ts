@@ -20,7 +20,7 @@ export interface BuySell {
     timestamp: number;
 }
 
-export interface BalanceItem { time: string; value: number; }
+export interface BalanceItem { time: string; value: Balances; }
 
 export interface KlineData {
     symbol: string;
@@ -46,7 +46,7 @@ export interface Trade {
 
 export interface Line {
     time: string
-    equity: number
+    equity: Balances
     buy: boolean
     sell: boolean
     price: number
@@ -59,8 +59,8 @@ export interface Line {
 }
 
 export interface DataStats {
-    initialBalance: number
-    finalBalance: number
+    initialBalance: Balances
+    finalBalance: Balances
     fees: number
     winTrades: number
     loseTrades: number
