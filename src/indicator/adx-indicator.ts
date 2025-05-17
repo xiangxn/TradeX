@@ -14,9 +14,13 @@ export class ADXIndicator implements Indicator {
         this.values = [];
         this.adx = new ADX({ period: this.period, high: [], low: [], close: [] });
     }
-    
+    minPeriods() {
+        return this.period! * 2 - 1;
+    }
+
     update(candle: Candle) {
-        const result = this.adx.nextValue(candle.close);
+        // @ts-ignore
+        const result = this.adx.nextValue({ high: candle.high, low: candle.low, close: candle.close, period: this.period });
         if (result) {
             this.values.push(
                 {
@@ -26,6 +30,7 @@ export class ADXIndicator implements Indicator {
                 }
             );
         }
+        return result
     }
 
 }

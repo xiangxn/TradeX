@@ -17,10 +17,15 @@ export class RSIIndicator implements Indicator {
         this.rsi = new RSI({ period, values: [] })
     }
 
-    update(candle: Candle): void {
+    minPeriods() {
+        return this.period!
+    }
+
+    update(candle: Candle) {
         const result = this.rsi.nextValue(candle.close);
         if (result) {
             this.values.push(result);
         }
+        return result
     }
 }

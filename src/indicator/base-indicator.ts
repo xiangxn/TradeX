@@ -8,7 +8,8 @@ export interface Indicator {
     name: string;
     period?: number;
     values: IndicatorValue[];
-    update: (candle: Candle) => void;
+    update: (candle: Candle) => any;
+    minPeriods: () => number;
 }
 
 

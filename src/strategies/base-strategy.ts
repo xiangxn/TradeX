@@ -15,6 +15,8 @@ export abstract class BaseStrategy {
     protected order?: Order;
     protected indicators: Map<string, Indicator> = new Map();
     private inited: boolean = false;
+    [key: string]: any;
+    
 
     constructor(options?: StrategyOptions) {
         if (options?.indicators) {
@@ -22,6 +24,14 @@ export abstract class BaseStrategy {
                 this.indicators.set(indicator.name, indicator);
             }
         }
+        return new Proxy(this, {
+            get: (target, prop: string, receiver) => {
+                if (target.indicators.has(prop)) {
+                    return target.indicators.get(prop);
+                }
+                return Reflect.get(target, prop, receiver);
+            }
+        });
     }
 
     abstract update(data: KlineData): void;
@@ -41,7 +51,7 @@ export abstract class BaseStrategy {
     async onInit(): Promise<void> {
         let maxPeriod = 0;
         for (const indicator of this.indicators.values()) {
-            const p = indicator.period ?? 0
+            const p = indicator.minPeriods() ?? 0
             if (p > maxPeriod) maxPeriod = p;
         }
         if (maxPeriod > 0) {

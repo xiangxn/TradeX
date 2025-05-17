@@ -66,7 +66,7 @@ export class BollBreak extends BaseStrategy {
         // BOLL数据
         const bollValues = this.getIndicator<MultiValue>("BOLL")
         const boll = bollValues[bollValues.length - 1]
-        this.bbwList.push((boll.upper - boll.lower) / boll.middle)
+        this.bbwList.push(boll.width)
         if (this.bbwList.length > this.lookback) {
             this.bbwList.splice(0, this.bbwList.length - this.lookback)
         }
