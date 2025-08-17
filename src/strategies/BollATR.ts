@@ -58,8 +58,9 @@ export class BollATR extends BaseStrategy {
     private trailingATR: number = 2
     private lossATR: number = 2.5
     private amount: number = 0.1
+    private kVol: number = 1.5
 
-    constructor(bollPeriod: number = 20, bollMult: number = 2, atrPeriod: number = 7, minATR: number = 20, trailingATR: number = 1.6, lossATR: number = 2.5) {
+    constructor(bollPeriod: number = 20, bollMult: number = 2, atrPeriod: number = 7, minATR: number = 20, trailingATR: number = 1.6, lossATR: number = 2.5, kVol: number = 1.5) {
         super({
             indicators: [
                 new BollingerIndicator(bollPeriod, bollMult),
@@ -70,6 +71,7 @@ export class BollATR extends BaseStrategy {
         this.minATR = minATR
         this.trailingATR = trailingATR
         this.lossATR = lossATR
+        this.kVol = kVol
     }
 
     update(data: KlineData): void {
@@ -82,6 +84,7 @@ export class BollATR extends BaseStrategy {
         const volValues = this.getIndicator<SingleValue>("MAVolume")
         const volLast = volValues.slice(-1)?.[0]
         const avgVol = calculateEMA(volValues.slice(-5), 5).slice(-1)?.[0]
+        const avgBollWidth = calculateEMA(bollValues.slice(-5).map(item => item.width), 5).slice(-1)?.[0]
 
         // console.debug(`[ATRBoll] Close: ${close.toFixed(2)} | MA: ${bollLast?.middle?.toFixed(2)} | Upper: ${bollLast?.upper?.toFixed(2)} | Lower: ${bollLast?.lower?.toFixed(2)} | AvgATR: ${avgATR} | ATR: ${atrLast!}`)
 
@@ -101,12 +104,12 @@ export class BollATR extends BaseStrategy {
             //     this.buy({ price: close, amount: Math.abs(position), timestamp: data.candle.timestamp })
             // }
         } else {
-            if (close > bollLast.upper && avgATR > this.minATR && atrLast > avgATR && volLast > avgVol) {
+            if (close > bollLast.upper && avgATR > this.minATR && atrLast > avgATR && bollLast.width > avgBollWidth) {
                 // 上轨突破逻辑
                 this.maxPrice = close
                 this.lossStop = close - this.lossATR * avgATR
                 this.buy({ price: close, amount: this.amount, timestamp: data.candle.timestamp })
-            } else if (close < bollLast.lower && avgATR > this.minATR && atrLast > avgATR && volLast > avgVol) {
+            } else if (close < bollLast.lower && avgATR > this.minATR && atrLast > avgATR && bollLast.width > avgBollWidth) {
                 // 下轨突破逻辑
                 this.minPrice = close
                 this.lossStop = close + this.lossATR * avgATR
