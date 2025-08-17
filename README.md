@@ -33,6 +33,7 @@ src/
 -  order:fill 订单填充
 -  balance:init 初始余额
 -  balance:update 余额更新
+-  balance:insufficient 资金不足
 -  candle 新的单个K线数据
 -  price 新的价格
 -  signal:buy 买入信号

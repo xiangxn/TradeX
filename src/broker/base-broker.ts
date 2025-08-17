@@ -50,6 +50,11 @@ export abstract class BaseBroker {
   abstract sell(price: number, amount: number, timestamp: number): Promise<Order>;
   abstract fetchBalances(): Promise<Balances>;
 
+  public checkBalance(symbol: string, amount: number): boolean {
+    const balance = this.getBalance(symbol);
+    return balance >= amount;
+  }
+
   public getBalance(symbol: string): number {
     return this.balances[symbol] ?? 0;
   }
@@ -112,12 +117,12 @@ export abstract class BaseBroker {
 
   }
 
-  protected getQuoteSymbol(symbol: string): string {
+  public getQuoteSymbol(symbol: string): string {
     const parts = symbol.split('/');
     return parts[1]; // 比如 BTC/USD → USD
   }
 
-  protected getBaseSymbol(symbol: string): string {
+  public getBaseSymbol(symbol: string): string {
     const parts = symbol.split('/');
     return parts[0]; // 比如 BTC/USD → BTC
   }

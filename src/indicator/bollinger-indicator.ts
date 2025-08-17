@@ -9,8 +9,10 @@ export class BollingerIndicator implements Indicator {
     mult: number;
     values: IndicatorValue[];
     boll: BollingerBands;
+    isDraw: boolean;
 
     constructor(period: number = 20, mult: number = 2, name: string = "BOLL") {
+        this.isDraw = true
         this.name = name;
         this.period = period;
         this.mult = mult;

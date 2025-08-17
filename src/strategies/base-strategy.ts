@@ -16,7 +16,7 @@ export abstract class BaseStrategy {
     protected indicators: Map<string, Indicator> = new Map();
     private inited: boolean = false;
     [key: string]: any;
-    
+
 
     constructor(options?: StrategyOptions) {
         if (options?.indicators) {
@@ -78,13 +78,23 @@ export abstract class BaseStrategy {
     }
 
     buy(params: BuySell): void {
-        console.info("Buy:", { ...params, timestamp: getTime(params.timestamp) });
-        eventBus.emit("signal:buy", { ...params, timestamp: this.alignmentTime(params.timestamp) });
+        const quote = this.broker!.getQuoteSymbol(this.feed!.symbol)
+        if (this.broker?.checkBalance(quote, params.price * params.amount)) {
+            console.info("Buy:", { ...params, timestamp: getTime(params.timestamp) })
+            eventBus.emit("signal:buy", { ...params, timestamp: this.alignmentTime(params.timestamp) })
+        } else {
+            eventBus.emit("balance:insufficient", { symbol: quote })
+        }
     }
 
     sell(params: BuySell): void {
-        console.info("Sell:", { ...params, timestamp: getTime(params.timestamp) });
-        eventBus.emit("signal:sell", { ...params, timestamp: this.alignmentTime(params.timestamp) });
+        const base = this.broker!.getBaseSymbol(this.feed!.symbol)
+        if (this.broker?.checkBalance(base, params.amount)) {
+            console.info("Sell:", { ...params, timestamp: getTime(params.timestamp) });
+            eventBus.emit("signal:sell", { ...params, timestamp: this.alignmentTime(params.timestamp) });
+        } else {
+            eventBus.emit("balance:insufficient", { symbol: base })
+        }
     }
 
     private alignmentTime(timestamp: number) {

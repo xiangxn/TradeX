@@ -7,8 +7,10 @@ export class ADXIndicator implements Indicator {
     period?: number | undefined;
     values: IndicatorValue[];
     adx: ADX
+    isDraw: boolean
 
     constructor(period: number = 14, name: string = "ADX") {
+        this.isDraw = false
         this.name = name;
         this.period = period;
         this.values = [];

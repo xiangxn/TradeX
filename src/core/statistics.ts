@@ -24,7 +24,7 @@ export class Statistics {
         eventBus.on('balance:update', this.onBalanceUpdate.bind(this));
         eventBus.on('candle', this.onCandle.bind(this))
         eventBus.on('balance:init', (balances: Balances) => {
-            this.initialBalance = balances
+            this.initialBalance = { ...balances }
             this.finalBalance = balances
             this.equityCurve.push({ time: "", value: this.finalBalance })
         });
@@ -43,7 +43,7 @@ export class Statistics {
             buy: false,
             sell: false,
             equity: {},
-            price: 0
+            price: data.candle.close
         })
     }
 
@@ -151,6 +151,7 @@ export class Statistics {
 
     mergeIndicators(line: Line, indicators: Map<string, Indicator>, index: number, linesCount: number) {
         indicators.forEach(indicator => {
+            if(!indicator.isDraw) return
             const data = indicator.values.length > linesCount ? indicator.values.slice(indicator.values.length - linesCount) : indicator.values
             const value = data[index];
             if (value === null || typeof value === 'number') {

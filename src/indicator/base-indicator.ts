@@ -7,6 +7,7 @@ export type IndicatorValue = SingleValue | MultiValue;
 export interface Indicator {
     name: string;
     period?: number;
+    isDraw: boolean;
     values: IndicatorValue[];
     update: (candle: Candle) => any;
     minPeriods: () => number;
