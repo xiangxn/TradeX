@@ -1,11 +1,10 @@
 import { ATRIndicator } from "../indicator/atr-indicator";
-import { MultiValue, SingleValue } from "../indicator/base-indicator";
+import { MultiValue } from "../indicator/base-indicator";
 import { BollingerIndicator } from "../indicator/bollinger-indicator";
 import { EMA } from "../indicator/ema-indicator";
 import { KlineData } from "../utils/types";
 import { BaseStrategy } from "./base-strategy";
 import { calculateEMA } from "../utils/helper";
-import { DonchianIndicator } from "../indicator/donchian-indicator";
 import { RSIIndicator } from "../indicator/rsi-indicator";
 import { MAVolumeIndicator } from "../indicator/volume-indicator";
 import { ADXIndicator } from "../indicator/adx-indicator";
@@ -14,12 +13,13 @@ export class Polymeric extends BaseStrategy {
 
     private amount: number = 0.1
     private trailingATR: number = 2
-    private lossATR: number = 1
+    private lossATR: number = 2
     private maxPrice: number = 0
     private minPrice: number = 0
     private trailingStop: number = 0
     private lossStop: number = 0
     private isTrend: boolean = false
+    private waitBackMiddle: number = 0
 
     constructor(bollPeriod: number = 20, bollMult: number = 2, atrPeriod: number = 14) {
         super({
@@ -36,12 +36,23 @@ export class Polymeric extends BaseStrategy {
     }
     update(data: KlineData): void {
         const close = data.candle.close;
+        const bollValues = this.BOLL.values
+        const boll = bollValues.slice(-1)?.[0]
+
+        if (this.waitBackMiddle !== 0) {
+            if (this.waitBackMiddle == -1 && close > boll.middle) {
+                this.waitBackMiddle = 0
+            } else if (this.waitBackMiddle == 1 && close < boll.middle) {
+                this.waitBackMiddle = 0
+            } else {
+                return
+            }
+        }
+
         const atrValues = this.ATR.values
         const avgATR = calculateEMA(atrValues.slice(-5), 5).slice(-1)?.[0]
         const smaATR = atrValues.slice(-5).reduce((a: number, b: number) => a + b, 0) / 5
-        const bollValues = this.BOLL.values
         const avgBollWidth = calculateEMA(bollValues.slice(-5).map((boll: MultiValue) => boll.width), 5).slice(-1)?.[0]
-        const boll = bollValues.slice(-1)?.[0]
         const atr = atrValues.slice(-1)?.[0]
         const ema20 = this.EMA20.values.slice(-1)?.[0]
         const ema60 = this.EMA60.values.slice(-1)?.[0]
@@ -76,8 +87,10 @@ export class Polymeric extends BaseStrategy {
                 if (boll.width < avgBollWidth && atr < smaATR) {
                     if (vol < avgSMAVol) {
                         if (rsi < 30) { // 买在超卖区
+                            this.lossStop = close - this.lossATR * ((boll.upper - boll.lower) / boll.width)
                             this.buy({ price: close, amount: this.amount, timestamp: data.candle.timestamp })
                         } else if (rsi > 70) {    // 卖在超买区
+                            this.lossStop = close + this.lossATR * ((boll.upper - boll.lower) / boll.width)
                             this.sell({ price: close, amount: this.amount, timestamp: data.candle.timestamp })
                         }
                     }
@@ -100,6 +113,7 @@ export class Polymeric extends BaseStrategy {
                     if (price <= this.trailingStop) {
                         // 止盈逻辑：动态止盈（跟踪止损）
                         this.maxPrice = 0
+                        this.waitBackMiddle = 1
                         this.sell({ price: price, amount: pos.size, timestamp })
                     } else if (price <= this.lossStop) {
                         // 止损逻辑：最高止损为 lossATR 倍 ATR，且不超过凯利公式得出的止损金额
@@ -107,7 +121,10 @@ export class Polymeric extends BaseStrategy {
                         this.sell({ price: price, amount: pos.size, timestamp })
                     }
                 } else {
-                    if (rsi > 60 || price >= boll.middle) {
+                    if (rsi > 60 || price >= boll.middle) { // 止盈
+                        this.sell({ price: price, amount: pos.size, timestamp })
+                    } else if (price <= this.lossStop) { // 止损
+                        this.lossStop = 0
                         this.sell({ price: price, amount: pos.size, timestamp })
                     }
                 }
@@ -118,6 +135,7 @@ export class Polymeric extends BaseStrategy {
                     if (price >= this.trailingStop) {
                         // 止盈逻辑：动态止盈（跟踪止损）
                         this.minPrice = 0
+                        this.waitBackMiddle = -1
                         this.buy({ price: price, amount: Math.abs(pos.size), timestamp })
                     } else if (price >= this.lossStop) {
                         // 止损逻辑：最低止损为 lossATR 倍 ATR，且不超过凯利公式得出的止损金额
@@ -125,7 +143,10 @@ export class Polymeric extends BaseStrategy {
                         this.buy({ price: price, amount: Math.abs(pos.size), timestamp })
                     }
                 } else {
-                    if (rsi < 40 || price <= boll.middle) {
+                    if (rsi < 40 || price <= boll.middle) { // 止盈
+                        this.buy({ price: price, amount: Math.abs(pos.size), timestamp })
+                    } else if (price >= this.lossStop) {    // 止损
+                        this.lossStop = 0
                         this.buy({ price: price, amount: Math.abs(pos.size), timestamp })
                     }
                 }

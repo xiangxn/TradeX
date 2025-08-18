@@ -124,13 +124,17 @@ export class Statistics {
         const grossProfit = this.winTrades.reduce((a, b) => a + b, 0)
         const grossLoss = this.loseTrades.reduce((a, b) => Math.abs(a) + Math.abs(b), 0)
 
+        const averageProfit = grossProfit / this.winTrades.length
+        const averageLoss = grossLoss / this.loseTrades.length
+        
         return {
             initialBalance: this.initialBalance,
             finalBalance: this.finalBalance,
             winTrades: this.winTrades.length,
             loseTrades: this.loseTrades.length,
-            averageProfit: grossProfit / this.winTrades.length,
-            averageLoss: grossLoss / this.loseTrades.length,
+            averageProfit,
+            averageLoss,
+            riskRewardRatio: averageProfit / averageLoss,
             profitFactor: grossProfit / grossLoss,
             maxDrawdown: this.caclMaxDrawdown(),
             fees: this.fees,
@@ -151,7 +155,7 @@ export class Statistics {
 
     mergeIndicators(line: Line, indicators: Map<string, Indicator>, index: number, linesCount: number) {
         indicators.forEach(indicator => {
-            if(!indicator.isDraw) return
+            if (!indicator.isDraw) return
             const data = indicator.values.length > linesCount ? indicator.values.slice(indicator.values.length - linesCount) : indicator.values
             const value = data[index];
             if (value === null || typeof value === 'number') {

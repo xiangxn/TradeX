@@ -66,6 +66,7 @@ export interface DataStats {
     loseTrades: number
     averageProfit: number
     averageLoss: number
+    riskRewardRatio: number
     profitFactor: number
     maxDrawdown: number
     lines: Line[]
