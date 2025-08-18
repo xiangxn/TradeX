@@ -9,8 +9,8 @@ export class ADXIndicator implements Indicator {
     adx: ADX
     isDraw: boolean
 
-    constructor(period: number = 14, name: string = "ADX") {
-        this.isDraw = false
+    constructor(period: number = 14, name: string = "ADX", isDraw: boolean = true) {
+        this.isDraw = isDraw
         this.name = name;
         this.period = period;
         this.values = [];

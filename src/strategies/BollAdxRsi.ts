@@ -51,12 +51,12 @@ export class BollADXRSI extends BaseStrategy {
             if (adx.adx > 25 && boll.width > 0.05 && adx.pdi > adx.mdi) {
                 // 多头趋势
                 if (close >= boll.upper && rsi > 60) {
-                    this.buy({ price: close, amount: 0.001, timestamp: data.candle.timestamp })
+                    this.buy({ price: close, amount: 0.1, timestamp: data.candle.timestamp })
                 }
             } else if (adx.adx > 25 && boll.width > 0.05 && adx.pdi < adx.mdi) {
                 // 空头趋势
                 if (close <= boll.lower && rsi < 40) {
-                    this.sell({ price: close, amount: 0.001, timestamp: data.candle.timestamp })
+                    this.sell({ price: close, amount: 0.1, timestamp: data.candle.timestamp })
                 }
             } else if (adx.adx < 20 && boll.width < 0.03) {
                 // 震荡

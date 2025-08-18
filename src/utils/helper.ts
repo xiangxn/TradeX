@@ -22,3 +22,27 @@ export function truncate(num: number, decimals: number): number {
     const factor = Math.pow(10, decimals);
     return Math.trunc(num * factor) / factor;
 }
+
+export function calculateEMA(data: number[], period: number): number[] {
+    if (data.length < period) {
+        throw new Error('Data length must be greater than or equal to period');
+    }
+
+    const ema: number[] = [];
+    const alpha = 2 / (period + 1);
+    
+    // 初始EMA为前period个数据的SMA
+    let sum = 0;
+    for (let i = 0; i < period; i++) {
+        sum += data[i];
+    }
+    ema.push(sum / period);
+
+    // 计算后续EMA值
+    for (let i = period; i < data.length; i++) {
+        const currentEMA = data[i] * alpha + ema[i - period] * (1 - alpha);
+        ema.push(currentEMA);
+    }
+
+    return ema;
+}

@@ -10,6 +10,7 @@ import { PercentCommission } from "./commission/percent-commission";
 import { BollBreak } from "./strategies/BollBreak";
 import { BollADXRSI } from "./strategies/BollAdxRsi";
 import { BollATR } from "./strategies/BollATR";
+import { Polymeric } from "./strategies/Polymeric";
 
 // const engine = new Engine({
 //   feed: [CCXTFeed, 'binance', 'BTC/USDT', '1m'],
@@ -22,7 +23,7 @@ const engine = new Engine({
   feed: [BacktestFeed, 'ETH/USDT', '5m', '/Users/necklace/Downloads/ETHUSDT-5m-2025-01.csv','1h'],
   statistics: [Statistics, "USDT"],
   broker: [MockBroker, { "ETH": 1, "USDT": 10000 }, new PercentCommission(0.001)],
-  strategies: [[BollATR]],
+  strategies: [[Polymeric]],
 });
 
 engine.backtest();
