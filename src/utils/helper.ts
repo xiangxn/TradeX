@@ -17,3 +17,8 @@ export function getAggregateMs(aggregateTimeframe: string): number {
         default: throw new Error('Unsupported aggregate timeframe')
     }
 }
+
+export function truncate(num: number, decimals: number): number {
+    const factor = Math.pow(10, decimals);
+    return Math.trunc(num * factor) / factor;
+}
