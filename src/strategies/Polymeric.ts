@@ -14,7 +14,7 @@ export class Polymeric extends BaseStrategy {
 
     private amount: number = 0.1
     private trailingATR: number = 2
-    private lossATR: number = 2.5
+    private lossATR: number = 1
     private maxPrice: number = 0
     private minPrice: number = 0
     private trailingStop: number = 0
@@ -65,11 +65,11 @@ export class Polymeric extends BaseStrategy {
                 if (ema20 > ema60 && close > boll.upper) {   // 多头趋势
                     this.maxPrice = close
                     this.lossStop = close - this.lossATR * avgATR
-                    this.buy({ price: close, amount: this.amount, timestamp: data.candle.timestamp })
+                    this.buy({ price: close, amount: this.amount * 2, timestamp: data.candle.timestamp })
                 } else if (ema20 < ema60 && close < boll.lower) {  // 空头趋势
                     this.minPrice = close
                     this.lossStop = close + this.lossATR * avgATR
-                    this.sell({ price: close, amount: this.amount, timestamp: data.candle.timestamp })
+                    this.sell({ price: close, amount: this.amount * 2, timestamp: data.candle.timestamp })
                 }
             } else {  // 震荡
                 this.isTrend = false
