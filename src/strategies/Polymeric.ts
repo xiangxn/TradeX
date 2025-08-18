@@ -13,7 +13,7 @@ export class Polymeric extends BaseStrategy {
 
     private amount: number = 0.1
     private trailingATR: number = 2
-    private lossATR: number = 2
+    private lossATR: number = 1
     private maxPrice: number = 0
     private minPrice: number = 0
     private trailingStop: number = 0
@@ -58,16 +58,16 @@ export class Polymeric extends BaseStrategy {
         const ema60 = this.EMA60.values.slice(-1)?.[0]
         const adx = this.ADX.values[this.ADX.values.length - 1]
         const rsi = this.RSI.values.slice(-1)?.[0]
-        const volValues = this.MAVolume.values
-        const vol = volValues.slice(-1)?.[0]
-        const avgSMAVol = volValues.slice(-5).reduce((a: number, b: number) => a + b, 0) / 5
+        // const volValues = this.MAVolume.values
+        // const vol = volValues.slice(-1)?.[0]
+        // const avgSMAVol = volValues.slice(-5).reduce((a: number, b: number) => a + b, 0) / 5
 
         let position = 0;
-        let entryPrice = 0;
+        // let entryPrice = 0;
         const pos = this.broker!.getPosition()
         if (pos) {
             position = pos.size;
-            entryPrice = pos.entryPrice;
+            // entryPrice = pos.entryPrice;
         }
         if (position === 0) {
             // 趋势判定
@@ -85,15 +85,15 @@ export class Polymeric extends BaseStrategy {
             } else {  // 震荡
                 this.isTrend = false
                 if (boll.width < avgBollWidth && atr < smaATR) {
-                    if (vol < avgSMAVol) {
-                        if (rsi < 30) { // 买在超卖区
-                            this.lossStop = close - this.lossATR * ((boll.upper - boll.lower) / boll.width)
-                            this.buy({ price: close, amount: this.amount, timestamp: data.candle.timestamp })
-                        } else if (rsi > 70) {    // 卖在超买区
-                            this.lossStop = close + this.lossATR * ((boll.upper - boll.lower) / boll.width)
-                            this.sell({ price: close, amount: this.amount, timestamp: data.candle.timestamp })
-                        }
+                    // if (vol < avgSMAVol) {
+                    if (rsi < 30) { // 买在超卖区
+                        this.lossStop = close - this.lossATR * ((boll.upper - boll.lower) / boll.width)
+                        this.buy({ price: close, amount: this.amount, timestamp: data.candle.timestamp })
+                    } else if (rsi > 70) {    // 卖在超买区
+                        this.lossStop = close + this.lossATR * ((boll.upper - boll.lower) / boll.width)
+                        this.sell({ price: close, amount: this.amount, timestamp: data.candle.timestamp })
                     }
+                    // }
                 }
             }
         }
@@ -103,6 +103,7 @@ export class Polymeric extends BaseStrategy {
         const pos = this.broker!.getPosition()
         if (pos) {
             const atr = this.ATR.values.slice(-1)?.[0]
+            const avgATR = calculateEMA(this.ATR.values.slice(-5), 5).slice(-1)?.[0]
             const rsi = this.RSI.values.slice(-1)?.[0]
             const boll = this.BOLL.values.slice(-1)?.[0]
             // 止盈逻辑
@@ -121,7 +122,7 @@ export class Polymeric extends BaseStrategy {
                         this.sell({ price: price, amount: pos.size, timestamp })
                     }
                 } else {
-                    if (rsi > 60 || price >= boll.middle) { // 止盈
+                    if (rsi > 60 || price >= boll.middle + avgATR * 1.5) { // 止盈
                         this.sell({ price: price, amount: pos.size, timestamp })
                     } else if (price <= this.lossStop) { // 止损
                         this.lossStop = 0
@@ -143,7 +144,7 @@ export class Polymeric extends BaseStrategy {
                         this.buy({ price: price, amount: Math.abs(pos.size), timestamp })
                     }
                 } else {
-                    if (rsi < 40 || price <= boll.middle) { // 止盈
+                    if (rsi < 40 || price <= boll.middle - avgATR * 1.5) { // 止盈
                         this.buy({ price: price, amount: Math.abs(pos.size), timestamp })
                     } else if (price >= this.lossStop) {    // 止损
                         this.lossStop = 0
