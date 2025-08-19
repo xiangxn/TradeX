@@ -22,7 +22,7 @@ import { Polymeric } from "./strategies/Polymeric";
 const engine = new Engine({
   feed: [BacktestFeed, 'ETH/USDT', '5m', '/Users/necklace/Downloads/ETHUSDT-5m-2025-01.csv','1h'],
   statistics: [Statistics, "USDT"],
-  broker: [MockBroker, { "ETH": 1, "USDT": 10000 }, new PercentCommission(0.001)],
+  broker: [MockBroker, { "ETH": 0.2, "USDT": 1000 }, new PercentCommission(0.001)],
   strategies: [[Polymeric]],
 });
 

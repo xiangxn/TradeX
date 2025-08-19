@@ -30,7 +30,7 @@ export function calculateEMA(data: number[], period: number): number[] {
 
     const ema: number[] = [];
     const alpha = 2 / (period + 1);
-    
+
     // 初始EMA为前period个数据的SMA
     let sum = 0;
     for (let i = 0; i < period; i++) {
@@ -45,4 +45,16 @@ export function calculateEMA(data: number[], period: number): number[] {
     }
 
     return ema;
+}
+
+export function calculateSharpe(returns: number[], periodsPerYear: number): number {
+    const n = returns.length;
+    if (n <= 1) return 0;
+
+    const mean = returns.reduce((a, b) => a + b, 0) / n;
+    const variance = returns.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (n - 1);
+    const stdDev = Math.sqrt(variance);
+
+    const sharpe = (mean / stdDev) * Math.sqrt(periodsPerYear);
+    return sharpe;
 }

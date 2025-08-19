@@ -1,13 +1,12 @@
 import { Indicator } from "../indicator/base-indicator";
-import { getTime } from "../utils/helper";
+import { calculateSharpe, getTime } from "../utils/helper";
 import { BalanceItem, Balances, KlineData, Order, Trade, DataStats, Line } from "../utils/types";
 import { eventBus } from "./event-bus"
 
 export class Statistics {
     private initialBalance: Balances = {};
     private finalBalance: Balances = {};
-    private winTrades: number[] = [];
-    private loseTrades: number[] = [];
+    private profits: number[] = [];
     private lastOrder: Order | null = null;
     private quote: string;
     private fees = 0;
@@ -26,7 +25,7 @@ export class Statistics {
         eventBus.on('balance:init', (balances: Balances) => {
             this.initialBalance = { ...balances }
             this.finalBalance = balances
-            this.equityCurve.push({ time: "", value: this.finalBalance })
+            this.equityCurve.push({ time: "", value: { ...this.finalBalance } })
         });
     }
 
@@ -65,11 +64,7 @@ export class Statistics {
             } else {
                 pnl = (this.lastOrder.price - order.price) * order.amount;
             }
-            if (pnl >= 0) {
-                this.winTrades.push(pnl);
-            } else {
-                this.loseTrades.push(pnl);
-            }
+            this.profits.push(pnl)
             this.lastOrder = null;
         }
     }
@@ -121,37 +116,56 @@ export class Statistics {
             })
         }
 
-        const grossProfit = this.winTrades.reduce((a, b) => a + b, 0)
-        const grossLoss = this.loseTrades.reduce((a, b) => Math.abs(a) + Math.abs(b), 0)
+        const winTrades = this.profits.filter((v) => v >= 0);
+        const loseTrades = this.profits.filter((v) => v < 0);
+        const grossProfit = winTrades.reduce((a, b) => a + b, 0)
+        const grossLoss = loseTrades.reduce((a, b) => Math.abs(a) + Math.abs(b), 0)
+
+        const averageProfit = grossProfit / winTrades.length
+        const averageLoss = grossLoss / loseTrades.length
+
+        const winRate = this.profits.length > 0 ? winTrades.length / this.profits.length : 0
+
+        const start = new Date(this.lines[0].time)
+        const end = new Date(this.lines[this.lines.length - 1].time)
+        const time = ((end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth())) / 12
+        const sharpeRatio = calculateSharpe(this.profits, this.profits.length / time)
 
         return {
             initialBalance: this.initialBalance,
             finalBalance: this.finalBalance,
-            winTrades: this.winTrades.length,
-            loseTrades: this.loseTrades.length,
-            averageProfit: grossProfit / this.winTrades.length,
-            averageLoss: grossLoss / this.loseTrades.length,
+            winTrades: winTrades.length,
+            loseTrades: loseTrades.length,
+            averageProfit,
+            averageLoss,
+            riskRewardRatio: averageProfit / averageLoss,
             profitFactor: grossProfit / grossLoss,
+            winRate,
             maxDrawdown: this.caclMaxDrawdown(),
+            sharpeRatio,
             fees: this.fees,
             lines: this.lines
         };
     }
 
     caclMaxDrawdown() {
-        let peak = this.equityCurve[0].value[this.quote];
+        let base = Object.keys(this.initialBalance).filter((v) => v !== this.quote)[0]
         let maxDrawdown = 0;
-        for (const ec of this.equityCurve) {
+        const data = this.equityCurve.filter((v) => v.value[base] === this.initialBalance[base])
+        let peak = data[0].value[this.quote];
+        let i = 0
+        for (const ec of data) {
             if (ec.value[this.quote] > peak) peak = ec.value[this.quote];
             const drawdown = (peak - ec.value[this.quote]) / peak;
             if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+            i++
         }
         return maxDrawdown * 100
     }
 
     mergeIndicators(line: Line, indicators: Map<string, Indicator>, index: number, linesCount: number) {
         indicators.forEach(indicator => {
-            if(!indicator.isDraw) return
+            if (!indicator.isDraw) return
             const data = indicator.values.length > linesCount ? indicator.values.slice(indicator.values.length - linesCount) : indicator.values
             const value = data[index];
             if (value === null || typeof value === 'number') {
