@@ -13,7 +13,9 @@
   "averageLoss": 5.636913043478261,
   "riskRewardRatio": 3.3230897119493084,
   "profitFactor": 2.2394735015310556,
-  "maxDrawdown": 82.05335282541752,
+  "winRate": 0.4025974025974026,
+  "maxDrawdown": 5.863878399476928,
+  "sharpeRatio": 2.3027206223361802,
   "fees": 39.746807999999994,
   "lines": [
     {
@@ -27,7 +29,7 @@
       "sell": false,
       "equity": {
         "ETH": 0.2,
-        "USDT": 1241.945346
+        "USDT": 1000
       },
       "price": 3462.45,
       "BOLL_MIDDLE": 3452.5550000000026,
@@ -52,7 +54,7 @@
       "sell": false,
       "equity": {
         "ETH": 0.2,
-        "USDT": 1241.945346
+        "USDT": 1000
       },
       "price": 3480.31,
       "BOLL_MIDDLE": 3453.129500000002,
@@ -77,7 +79,7 @@
       "sell": false,
       "equity": {
         "ETH": 0.2,
-        "USDT": 1241.945346
+        "USDT": 1000
       },
       "price": 3526.53,
       "BOLL_MIDDLE": 3456.972500000002,

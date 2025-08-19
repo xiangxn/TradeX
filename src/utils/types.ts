@@ -69,5 +69,7 @@ export interface DataStats {
     riskRewardRatio: number
     profitFactor: number
     maxDrawdown: number
+    sharpeRatio: number
+    winRate: number
     lines: Line[]
 }

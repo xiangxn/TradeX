@@ -10,13 +10,11 @@ fetch('report.json')
     .then(response => response.json())
     .then(data => {
 
-        const winRate = data.winTrades + data.loseTrades > 0
-            ? ((data.winTrades / (data.winTrades + data.loseTrades)) * 100).toFixed(2)
-            : '0.00';
+        const winRate = (data.winRate * 100).toFixed(2)
         document.getElementById('stats').innerText =
             `Initial: ${formatBalance(data.initialBalance)}, Final: ${formatBalance(data.finalBalance)}, Fees: ${parseFloat(data.fees.toFixed(4))}
             Wins: ${data.winTrades}, Losses: ${data.loseTrades}, WinRate: ${winRate}%, AVGProfit: ${parseFloat(data.averageProfit.toFixed(4))}, AVGLoss: ${parseFloat(data.averageLoss.toFixed(4))}
-            RRR: ${parseFloat(data.riskRewardRatio.toFixed(2))}, ProfitFactor: ${parseFloat(data.profitFactor.toFixed(2))}, MDD: ${parseFloat(data.maxDrawdown.toFixed(2))}%`;
+            RRR: ${parseFloat(data.riskRewardRatio.toFixed(2))}, PF: ${parseFloat(data.profitFactor.toFixed(2))}, MDD: ${parseFloat(data.maxDrawdown.toFixed(2))}%, Sharpe:${data.sharpeRatio.toFixed(2)}`;
 
         const time = data.lines.map(d => d.time);
         const open = data.lines.map(d => d.open);
