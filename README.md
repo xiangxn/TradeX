@@ -4,8 +4,11 @@ src/
 │
 ├── core/             # Engine 相关
 │   ├── engine.ts       # 核心引擎，启动整个回测、模拟盘、实盘
-│   ├── statistics.ts   # 数据统计
 │   ├── event-bus.ts    # 事件驱动模块 EventBus 实现
+│
+├── statistics/                # 数据源模块
+│   ├── base-statistics.ts     # 数据统计基类
+│   ├── db-statistics.ts       # 数据统计带数据库存储
 │
 ├── feed/                # 数据源模块
 │   ├── base-feed.ts     # 基础 Feed 类

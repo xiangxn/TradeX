@@ -46,9 +46,9 @@ export interface Trade {
 
 export interface Line {
     time: string
-    equity: Balances
-    buy: boolean
-    sell: boolean
+    equity: Balances|null
+    buy: boolean|null
+    sell: boolean|null
     price: number
     open: number
     high: number;

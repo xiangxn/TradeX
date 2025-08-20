@@ -28,7 +28,7 @@ export class Polymeric extends BaseStrategy {
                 new ATRIndicator(atrPeriod),
                 new EMA(20, "EMA20"),
                 new EMA(60, "EMA60"),
-                new RSIIndicator(),
+                new RSIIndicator(14, "RSI", true),
                 new MAVolumeIndicator(),
                 new ADXIndicator()
             ]
@@ -58,6 +58,7 @@ export class Polymeric extends BaseStrategy {
         const ema60 = this.EMA60.values.slice(-1)?.[0]
         const adx = this.ADX.values[this.ADX.values.length - 1]
         const rsi = this.RSI.values.slice(-1)?.[0]
+        
         // const volValues = this.MAVolume.values
         // const vol = volValues.slice(-1)?.[0]
         // const avgSMAVol = volValues.slice(-5).reduce((a: number, b: number) => a + b, 0) / 5
@@ -85,11 +86,12 @@ export class Polymeric extends BaseStrategy {
             } else {  // 震荡
                 this.isTrend = false
                 if (boll.width < avgBollWidth && atr < smaATR) {
+                    const avgRsi = calculateEMA(this.RSI.values.slice(-5), 5).slice(-1)?.[0]
                     // if (vol < avgSMAVol) {
-                    if (rsi < 30) { // 买在超卖区
+                    if (avgRsi < 30) {  // 买在超卖区
                         this.lossStop = close - this.lossATR * ((boll.upper - boll.lower) / boll.width)
                         this.buy({ price: close, amount: this.amount, timestamp: data.candle.timestamp })
-                    } else if (rsi > 70) {    // 卖在超买区
+                    } else if (avgRsi > 70) {   // 卖在超买区
                         this.lossStop = close + this.lossATR * ((boll.upper - boll.lower) / boll.width)
                         this.sell({ price: close, amount: this.amount, timestamp: data.candle.timestamp })
                     }

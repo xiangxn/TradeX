@@ -12,5 +12,8 @@
 #!.yarn/cache
 .pnp.*
 dist
-logs
+logs/*
+!logs/.gitkeep
 node_modules
+data/*
+!data/.gitkeep

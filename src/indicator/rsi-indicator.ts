@@ -11,8 +11,8 @@ export class RSIIndicator implements Indicator {
     rsi: RSI;
     isDraw: boolean;
 
-    constructor(period: number = 14, name: string = "RSI") {
-        this.isDraw = false
+    constructor(period: number = 14, name: string = "RSI", isDraw: boolean = false) {
+        this.isDraw = isDraw
         this.name = name;
         this.period = period;
         this.values = [];
