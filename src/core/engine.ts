@@ -1,7 +1,7 @@
 import { BaseBroker } from '../broker/base-broker';
 import { BaseStrategy } from '../strategies/base-strategy';
 import { generateReport } from '../report/reporter';
-import { Statistics } from './statistics';
+import { Statistics } from '../statistics/base-statistics';
 import { BaseFeed } from '../feed/base-feed';
 import { getAggregateMs } from '../utils/helper';
 
@@ -34,16 +34,16 @@ export class Engine<
   constructor(private options: EngineOptions<TBroker, TStrategy, TFeed, TStatistics>) {
     const { feed, broker, statistics } = this.options
 
-    const [statisticsClass, ...statisticsArgs] = statistics;
-    this.statistics = new statisticsClass(this, ...statisticsArgs);
+    const [FeedClass, ...feedArgs] = feed
+    this.feed = new FeedClass(...feedArgs)
 
     const [BrokerClass, ...brokerArgs] = broker
     this.broker = new BrokerClass(...brokerArgs)
 
-    const [FeedClass, ...feedArgs] = feed
-    this.feed = new FeedClass(...feedArgs)
-
     this.strategies = this.options.strategies.map(([StrategyClass, ...args]) => new StrategyClass(...args))
+
+    const [statisticsClass, ...statisticsArgs] = statistics;
+    this.statistics = new statisticsClass(this, ...statisticsArgs);
   }
 
   public getStrategies() {
@@ -53,6 +53,14 @@ export class Engine<
   public alignmentTime(timestamp: number) {
     const timeframe = getAggregateMs(this.feed.getTimeframe())
     return Math.floor(timestamp / timeframe) * timeframe
+  }
+
+  public getTimeframe() {
+    return this.feed.getTimeframe()
+  }
+
+  public getSymbol() {
+    return this.feed.symbol
   }
 
   public addStrategy(strategy: ClassWithArgs<TStrategy>) {

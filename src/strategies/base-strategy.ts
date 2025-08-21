@@ -1,8 +1,8 @@
 import { eventBus } from '../core/event-bus';
 import { BaseFeed } from '../feed/base-feed';
 import { BaseBroker } from '../broker/base-broker';
-import { BuySell, KlineData, Order } from '../utils/types';
-import { Indicator, IndicatorValue } from '../indicator/base-indicator';
+import { BuySell, KlineData, Order, IndicatorValue } from '../utils/types';
+import { Indicator } from '../indicator/base-indicator';
 import { getAggregateMs, getTime } from '../utils/helper';
 
 interface StrategyOptions {
@@ -38,9 +38,12 @@ export abstract class BaseStrategy {
     protected onPrice(price: number, timestamp: number): void { }
 
     private onCandle(data: KlineData): void {
+        let indicators: { [key: string]: IndicatorValue } = {}
         for (const indicator of this.indicators.values()) {
-            indicator.update(data.candle);
+            let value = indicator.update(data.candle);
+            indicators[indicator.name] = value;
         }
+        eventBus.emit("candle:indicator", { kline: data, indicators })
         this.update(data);
     }
 

@@ -1,6 +1,5 @@
 import { Commission } from '../commission/base-commission';
 import { eventBus } from '../core/event-bus';
-import { truncate } from '../utils/helper';
 import { Balances, Order, Position } from '../utils/types';
 
 export abstract class BaseBroker {
@@ -69,8 +68,8 @@ export abstract class BaseBroker {
     const p = this.getPosition(symbol);
     if (p) {
       p.symbol = symbol;
-      p.size = truncate(size + p.size, 6);
-      p.entryPrice = truncate(p.entryPrice + entryPrice, 6)
+      p.size = Number((size + p.size).toFixed(6));
+      p.entryPrice = Number((p.entryPrice + entryPrice).toFixed(6))
     } else {
       this.positions.push({ symbol, size, entryPrice });
     }
@@ -129,14 +128,14 @@ export abstract class BaseBroker {
   }
 
   protected addBalance(symbol: string, amount: number) {
-    this.balances[symbol] = truncate((this.balances[symbol] ?? 0) + Math.abs(amount), 6);
+    this.balances[symbol] = Number(((this.balances[symbol] ?? 0) + Math.abs(amount)).toFixed(6));
   }
 
   protected subBalance(symbol: string, amount: number) {
     let balance = this.balances[symbol] ?? 0;
     let absamount = Math.abs(amount)
     if (balance >= absamount) {
-      this.balances[symbol] = truncate(this.balances[symbol] - absamount, 6);
+      this.balances[symbol] = Number((this.balances[symbol] - absamount).toFixed(6));
     } else {
       throw new Error(`Insufficient balance: ${symbol}:${amount}`);
     }

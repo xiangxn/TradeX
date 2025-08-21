@@ -46,9 +46,9 @@ export interface Trade {
 
 export interface Line {
     time: string
-    equity: Balances
-    buy: boolean
-    sell: boolean
+    equity: Balances|null
+    buy: boolean|null
+    sell: boolean|null
     price: number
     open: number
     high: number;
@@ -73,3 +73,7 @@ export interface DataStats {
     winRate: number
     lines: Line[]
 }
+
+export type SingleValue = number;
+export type MultiValue = Record<string, number>;
+export type IndicatorValue = SingleValue | MultiValue;

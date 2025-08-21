@@ -16,7 +16,17 @@ export class CCXTFeed extends BaseFeed {
         const last = ohlcv[ohlcv.length - 1];
         if (last[0] !== this.lastTimestamp) {
           this.lastTimestamp = last[0];
-          this.emitCandle({ symbol: this.symbol, timeframe: this.timeframe, candle: last });
+          this.emitCandle({
+            symbol: this.symbol, timeframe: this.timeframe,
+            candle: {
+              timestamp: last[0],
+              open: last[1],
+              high: last[2],
+              low: last[3],
+              close: last[4],
+              volume: last[5]
+            }
+          });
         }
         if (last[4] !== this.lastPrice) {
           this.lastPrice = last[4];
@@ -38,6 +48,14 @@ export class CCXTFeed extends BaseFeed {
     // @ts-ignore
     const exchange = new ccxt[exchangeId]();
     await exchange.loadMarkets();
-    return await exchange.fetchOHLCV(symbol, timeframe, undefined, limit);
+    const data = await exchange.fetchOHLCV(symbol, timeframe, undefined, limit);
+    return data.map((candle: any) => ({
+      timestamp: candle[0],
+      open: candle[1],
+      high: candle[2],
+      low: candle[3],
+      close: candle[4],
+      volume: candle[5]
+    }))
   }
 }

@@ -4,12 +4,15 @@
     "start": "tsc && node dist/index.js",
     "dev": "ts-node -r global-agent/bootstrap src/index.ts",
     "dev:proxy": "cross-env GLOBAL_AGENT_HTTP_PROXY=http://127.0.0.1:1087 yarn dev",
+    "backtest": "ts-node -r global-agent/bootstrap src/backtest.ts",
     "build": "tsc",
     "clean": "rm -rf dist && rm -rf logs",
-    "show": "ts-node src/report.ts"
+    "show": "ts-node src/report.ts",
+    "test:static":" ts-node test/test-statistics.ts"
   },
   "packageManager": "yarn@4.5.2",
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/express": "^5",
     "@types/global-agent": "^3",
     "@types/node": "^22.14.1",
@@ -22,6 +25,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "better-sqlite3": "^12.2.0",
     "ccxt": "^4.4.77",
     "csv-parse": "^5.6.0",
     "log4js": "^6.9.1",

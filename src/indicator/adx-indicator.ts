@@ -1,6 +1,6 @@
 import { ADX } from "technicalindicators";
-import { Candle } from "../utils/types";
-import { Indicator, IndicatorValue } from "./base-indicator";
+import { Candle, IndicatorValue } from "../utils/types";
+import { Indicator } from "./base-indicator";
 
 export class ADXIndicator implements Indicator {
     name: string;

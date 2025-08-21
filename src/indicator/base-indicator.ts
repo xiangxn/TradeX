@@ -1,8 +1,6 @@
-import { Candle } from "../utils/types";
+import { Candle, IndicatorValue } from "../utils/types";
 
-export type SingleValue = number;
-export type MultiValue = Record<string, number>;
-export type IndicatorValue = SingleValue | MultiValue;
+
 
 export interface Indicator {
     name: string;
