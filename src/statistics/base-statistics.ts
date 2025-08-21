@@ -1,6 +1,6 @@
 import { Indicator } from "../indicator/base-indicator";
 import { calculateSharpe, getTime } from "../utils/helper";
-import { BalanceItem, Balances, KlineData, Order, Trade, DataStats, Line } from "../utils/types";
+import { BalanceItem, Balances, KlineData, Order, Trade, DataStats, Line, IndicatorValue } from "../utils/types";
 import { eventBus } from "../core/event-bus"
 
 export class Statistics {
@@ -22,7 +22,7 @@ export class Statistics {
         eventBus.on('order:filled', this.onFill.bind(this));
         eventBus.on('position:closed', this.onPositionClose.bind(this));
         eventBus.on('balance:update', this.onBalanceUpdate.bind(this));
-        eventBus.on('candle', this.onCandle.bind(this))
+        eventBus.on('candle:indicator', this.onCandle.bind(this))
         eventBus.on('balance:init', (balances: Balances) => {
             this.initialBalance = { ...balances }
             this.finalBalance = balances
@@ -30,25 +30,25 @@ export class Statistics {
         });
     }
 
-    protected onCandle(data: KlineData) {
+    protected onCandle(data: { kline: KlineData, indicators: { [key: string]: IndicatorValue } }) {
         if (this.symbol === null) {
-            this.symbol = data.symbol;
-            this.base = data.symbol.split("/")[0];
-            this.quote = data.symbol.split("/")[1];
+            this.symbol = data.kline.symbol;
+            this.base = data.kline.symbol.split("/")[0];
+            this.quote = data.kline.symbol.split("/")[1];
         }
-        const timestamp = this.engine.alignmentTime(data.candle.timestamp)
+        const timestamp = this.engine.alignmentTime(data.kline.candle.timestamp)
         let time = getTime(timestamp)
         this.lines.push({
             time,
-            open: data.candle.open,
-            close: data.candle.close,
-            low: data.candle.low,
-            high: data.candle.high,
-            volume: data.candle.volume,
+            open: data.kline.candle.open,
+            close: data.kline.candle.close,
+            low: data.kline.candle.low,
+            high: data.kline.candle.high,
+            volume: data.kline.candle.volume,
             buy: false,
             sell: false,
             equity: {},
-            price: data.candle.close
+            price: data.kline.candle.close
         })
     }
 

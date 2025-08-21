@@ -1,7 +1,6 @@
 import { RSI } from "technicalindicators";
-import { Candle } from "../utils/types";
-import { Indicator, IndicatorValue } from "./base-indicator";
-import { getTime } from "../utils/helper";
+import { Candle, IndicatorValue } from "../utils/types";
+import { Indicator } from "./base-indicator";
 
 
 export class RSIIndicator implements Indicator {

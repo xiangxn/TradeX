@@ -1,12 +1,13 @@
 import { Statistics } from "./base-statistics";
 import Database from "better-sqlite3"
 import fs from "fs";
-import { Balances, KlineData, Order } from "../utils/types";
+import { Balances, IndicatorValue, KlineData, Order } from "../utils/types";
 import { getTime } from "../utils/helper";
 
 const INSERT_TRADES = "INSERT INTO trades (symbol,timeframe,time,price,fees,side,profit) VALUES (?,?,?,?,?,?,?)"
 const INSERT_LINES = "INSERT INTO lines (symbol,timeframe,time,open,close,low,high,volume) VALUES (?,?,?,?,?,?,?,?)"
 const INSERT_BALANCES = "INSERT INTO balances (symbol,timeframe,time,value) VALUES (?,?,?,?)"
+const INSERT_INDICATORS = "INSERT INTO indicators (symbol,timeframe,time,name,value) VALUES (?,?,?,?,?)"
 
 export class DBStatistics extends Statistics {
 
@@ -25,7 +26,7 @@ export class DBStatistics extends Statistics {
 
     public createTables() {
         const path = `${this.dbDir}/data/${this.engine.getSymbol().replace("/", "")}_${this.engine.getTimeframe()}.sqlite`
-        console.debug("DB Path:", path)
+        console.debug("[Statistics] DB Path:", path)
         if (fs.existsSync(path)) {
             return
         }
@@ -64,13 +65,31 @@ export class DBStatistics extends Statistics {
                 value TEXT
             );
             CREATE INDEX IF NOT EXISTS idx_balances_symbol_timeframe ON balances(symbol, timeframe);
+
+            CREATE TABLE IF NOT EXISTS indicators (
+                id INTEGER PRIMARY KEY,
+                symbol TEXT,
+                timeframe TEXT,
+                time TEXT,
+                name TEXT,
+                value TEXT
+            );
+            CREATE INDEX IF NOT EXISTS idx_indicators_symbol_timeframe ON indicators(symbol, timeframe);
         `)
     }
 
-    protected override onCandle(data: KlineData) {
+    protected override onCandle(data: { kline: KlineData, indicators: { [key: string]: IndicatorValue } }) {
         super.onCandle(data)
+        const kline = data.kline
         if (this.db) {
-            this.db.prepare(INSERT_LINES).run(data.symbol, this.engine.getTimeframe(), getTime(data.candle.timestamp), data.candle.open, data.candle.close, data.candle.low, data.candle.high, data.candle.volume)
+            let insKline = this.db.prepare(INSERT_LINES)
+            let insInd = this.db.prepare(INSERT_INDICATORS)
+            this.db.transaction(() => {
+                insKline.run(kline.symbol, this.engine.getTimeframe(), getTime(kline.candle.timestamp), kline.candle.open, kline.candle.close, kline.candle.low, kline.candle.high, kline.candle.volume)
+                for (const [name, value] of Object.entries(data.indicators)) {
+                    insInd.run(kline.symbol, this.engine.getTimeframe(), getTime(kline.candle.timestamp), name, JSON.stringify(value))
+                }
+            })()
         }
     }
 

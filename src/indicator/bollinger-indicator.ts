@@ -1,7 +1,6 @@
 import { BollingerBands } from "technicalindicators";
-import { Candle } from "../utils/types";
-import { Indicator, IndicatorValue } from "./base-indicator";
-import { getTime } from "../utils/helper";
+import { Candle, IndicatorValue } from "../utils/types";
+import { Indicator } from "./base-indicator";
 
 export class BollingerIndicator implements Indicator {
     name: string;
@@ -19,7 +18,7 @@ export class BollingerIndicator implements Indicator {
         this.values = [];
         this.boll = new BollingerBands({ period: this.period, stdDev: this.mult, values: [] })
     }
-    
+
     minPeriods() {
         return this.period!
     }

@@ -1,8 +1,7 @@
 import { ATRIndicator } from "../indicator/atr-indicator";
-import { MultiValue } from "../indicator/base-indicator";
 import { BollingerIndicator } from "../indicator/bollinger-indicator";
 import { EMA } from "../indicator/ema-indicator";
-import { KlineData } from "../utils/types";
+import { KlineData, MultiValue } from "../utils/types";
 import { BaseStrategy } from "./base-strategy";
 import { calculateEMA } from "../utils/helper";
 import { RSIIndicator } from "../indicator/rsi-indicator";
@@ -58,7 +57,7 @@ export class Polymeric extends BaseStrategy {
         const ema60 = this.EMA60.values.slice(-1)?.[0]
         const adx = this.ADX.values[this.ADX.values.length - 1]
         const rsi = this.RSI.values.slice(-1)?.[0]
-        
+
         // const volValues = this.MAVolume.values
         // const vol = volValues.slice(-1)?.[0]
         // const avgSMAVol = volValues.slice(-5).reduce((a: number, b: number) => a + b, 0) / 5

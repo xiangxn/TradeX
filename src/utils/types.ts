@@ -73,3 +73,7 @@ export interface DataStats {
     winRate: number
     lines: Line[]
 }
+
+export type SingleValue = number;
+export type MultiValue = Record<string, number>;
+export type IndicatorValue = SingleValue | MultiValue;

@@ -10,7 +10,7 @@
       "previewLimit": 50,
       "driver": "SQLite",
       "name": "ethusdt",
-      "database": "${workspaceFolder:trader}/ETHUSDT.sqlite"
+      "database": "${workspaceFolder:trader}/data/ETHUSDT_1h.sqlite"
     }
   ]
 }

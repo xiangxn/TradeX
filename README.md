@@ -38,6 +38,7 @@ src/
 -  balance:update 余额更新
 -  balance:insufficient 资金不足
 -  candle 新的单个K线数据
+-  candle:indicator 新K线数据，指标数据已更新
 -  price 新的价格
 -  signal:buy 买入信号
 -  signal:sell 卖出信号
