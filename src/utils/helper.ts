@@ -58,3 +58,7 @@ export function calculateSharpe(returns: number[], periodsPerYear: number): numb
     const sharpe = (mean / stdDev) * Math.sqrt(periodsPerYear);
     return sharpe;
 }
+
+export function calculateEMAROC(ema: number[]): number {
+    return (ema[ema.length - 1] - ema[0]) / ema[0] * 100
+}

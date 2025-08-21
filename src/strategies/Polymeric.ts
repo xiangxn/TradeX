@@ -3,7 +3,7 @@ import { BollingerIndicator } from "../indicator/bollinger-indicator";
 import { EMA } from "../indicator/ema-indicator";
 import { KlineData, MultiValue } from "../utils/types";
 import { BaseStrategy } from "./base-strategy";
-import { calculateEMA } from "../utils/helper";
+import { calculateEMA, calculateEMAROC, getTime } from "../utils/helper";
 import { RSIIndicator } from "../indicator/rsi-indicator";
 import { MAVolumeIndicator } from "../indicator/volume-indicator";
 import { ADXIndicator } from "../indicator/adx-indicator";
@@ -56,7 +56,7 @@ export class Polymeric extends BaseStrategy {
         const ema20 = this.EMA20.values.slice(-1)?.[0]
         const ema60 = this.EMA60.values.slice(-1)?.[0]
         const adx = this.ADX.values[this.ADX.values.length - 1]
-        const rsi = this.RSI.values.slice(-1)?.[0]
+        // const rsi = this.RSI.values.slice(-1)?.[0]
 
         // const volValues = this.MAVolume.values
         // const vol = volValues.slice(-1)?.[0]
@@ -123,7 +123,7 @@ export class Polymeric extends BaseStrategy {
                         this.sell({ price: price, amount: pos.size, timestamp })
                     }
                 } else {
-                    if (rsi > 60 || price >= boll.middle + avgATR * 1.5) { // 止盈
+                    if (rsi > 60 || price >= boll.middle + avgATR * this.trailingATR) { // 止盈
                         this.sell({ price: price, amount: pos.size, timestamp })
                     } else if (price <= this.lossStop) { // 止损
                         this.lossStop = 0
@@ -145,7 +145,7 @@ export class Polymeric extends BaseStrategy {
                         this.buy({ price: price, amount: Math.abs(pos.size), timestamp })
                     }
                 } else {
-                    if (rsi < 40 || price <= boll.middle - avgATR * 1.5) { // 止盈
+                    if (rsi < 40 || price <= boll.middle - avgATR * this.trailingATR) { // 止盈
                         this.buy({ price: price, amount: Math.abs(pos.size), timestamp })
                     } else if (price >= this.lossStop) {    // 止损
                         this.lossStop = 0
