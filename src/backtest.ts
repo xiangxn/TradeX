@@ -13,11 +13,18 @@ import { BollATR } from "./strategies/BollATR";
 import { Polymeric } from "./strategies/Polymeric";
 import { DBStatistics } from "./statistics/db-statistics";
 
+// const engine = new Engine({
+//   feed: [CCXTFeed, 'binance', 'BTC/USDT', '1m'],
+//   broker: [MockBroker, 300],
+//   strategies: [[BOLLRSI]],
+// });
+
+
 const engine = new Engine({
-  feed: [CCXTFeed, "binance", 'ETH/USDT', '1h'],
-  statistics: [DBStatistics],
+  feed: [BacktestFeed, 'ETH/USDT', '5m', '/Users/necklace/Downloads/ETHUSDT-5m-2025-01.csv','1h'],
+  statistics: [Statistics],
   broker: [MockBroker, { "ETH": 0.2, "USDT": 1000 }, new PercentCommission(0.001)],
   strategies: [[Polymeric]],
 });
 
-engine.start();
+engine.backtest();

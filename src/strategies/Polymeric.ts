@@ -34,6 +34,7 @@ export class Polymeric extends BaseStrategy {
         })
     }
     update(data: KlineData): void {
+        console.log("update:", data)
         const close = data.candle.close;
         const bollValues = this.BOLL.values
         const boll = bollValues.slice(-1)?.[0]
@@ -101,6 +102,7 @@ export class Polymeric extends BaseStrategy {
     }
 
     protected override onPrice(price: number, timestamp: number): void {
+        console.log("onPrice:", price, timestamp)
         const pos = this.broker!.getPosition()
         if (pos) {
             const atr = this.ATR.values.slice(-1)?.[0]

@@ -4,6 +4,7 @@
     "start": "tsc && node dist/index.js",
     "dev": "ts-node -r global-agent/bootstrap src/index.ts",
     "dev:proxy": "cross-env GLOBAL_AGENT_HTTP_PROXY=http://127.0.0.1:1087 yarn dev",
+    "backtest": "ts-node -r global-agent/bootstrap src/backtest.ts",
     "build": "tsc",
     "clean": "rm -rf dist && rm -rf logs",
     "show": "ts-node src/report.ts",
