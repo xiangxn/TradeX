@@ -24,7 +24,7 @@ export class BollingerIndicator implements Indicator {
     }
 
     update(candle: Candle) {
-        const result = this.boll.nextValue(candle.close);
+        let result = this.boll.nextValue(candle.close);
         if (result) {
             this.values.push({
                 middle: result.middle,
@@ -32,6 +32,7 @@ export class BollingerIndicator implements Indicator {
                 lower: result.lower,
                 width: (result.upper - result.lower) / result.middle
             });
+            return this.values.slice(-1)?.[0]
         }
         return result
     }

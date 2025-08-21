@@ -19,15 +19,11 @@ export class Statistics {
 
     constructor(engine: any) {
         this.engine = engine;
-        eventBus.on('order:filled', this.onFill.bind(this));
-        eventBus.on('position:closed', this.onPositionClose.bind(this));
-        eventBus.on('balance:update', this.onBalanceUpdate.bind(this));
+        eventBus.on('order:filled', this.onFill.bind(this))
+        eventBus.on('position:closed', this.onPositionClose.bind(this))
+        eventBus.on('balance:update', this.onBalanceUpdate.bind(this))
         eventBus.on('candle:indicator', this.onCandle.bind(this))
-        eventBus.on('balance:init', (balances: Balances) => {
-            this.initialBalance = { ...balances }
-            this.finalBalance = balances
-            this.equityCurve.push({ time: "", value: { ...this.finalBalance } })
-        });
+        eventBus.on('balance:init', this.onBalanceInit.bind(this))
     }
 
     protected onCandle(data: { kline: KlineData, indicators: { [key: string]: IndicatorValue } }) {
@@ -76,6 +72,7 @@ export class Statistics {
             this.profits.push(pnl)
             this.lastOrder = null;
         }
+        this.fees += order.fee ? order.fee : 0;
         return pnl
     }
 
@@ -83,6 +80,12 @@ export class Statistics {
         this.saveTrade(order);
         this.lastOrder = order;
         this.fees += order.fee ? order.fee : 0;
+    }
+
+    protected onBalanceInit(balances: Balances) {
+        this.initialBalance = { ...balances }
+        this.finalBalance = balances
+        this.equityCurve.push({ time: "", value: { ...this.finalBalance } })
     }
 
     protected onBalanceUpdate(timestamp: number, balances: Balances) {
