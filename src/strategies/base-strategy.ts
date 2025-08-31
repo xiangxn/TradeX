@@ -1,7 +1,7 @@
 import { eventBus } from '../core/event-bus';
 import { BaseFeed } from '../feed/base-feed';
 import { BaseBroker } from '../broker/base-broker';
-import { BuySell, KlineData, Order, IndicatorValue } from '../utils/types';
+import { BuySell, KlineData, Order, IndicatorValue, Candle } from '../utils/types';
 import { Indicator } from '../indicator/base-indicator';
 import { getAggregateMs, getTime } from '../utils/helper';
 
@@ -14,7 +14,9 @@ export abstract class BaseStrategy {
     protected feed?: BaseFeed;
     protected order?: Order;
     protected indicators: Map<string, Indicator> = new Map();
+    protected klines: KlineData[] = [];
     private inited: boolean = false;
+    protected maxPeriod: number = 0;
     [key: string]: any;
 
 
@@ -44,7 +46,11 @@ export abstract class BaseStrategy {
             indicators[indicator.name] = value;
         }
         eventBus.emit("candle:indicator", { kline: data, indicators })
+        this.klines.push(data);
         this.update(data);
+        if (this.klines.length > this.maxPeriod) {
+            this.klines.shift();
+        }
     }
 
     onOrderFill(order: Order): void {
@@ -52,17 +58,20 @@ export abstract class BaseStrategy {
     }
 
     async onInit(): Promise<void> {
-        let maxPeriod = 0;
         for (const indicator of this.indicators.values()) {
             const p = indicator.minPeriods() ?? 0
-            if (p > maxPeriod) maxPeriod = p;
+            if (p > this.maxPeriod) this.maxPeriod = p;
         }
-        if (maxPeriod > 0) {
-            let datas = await this.feed?.fetchHistoricalOHLCV(this.feed.exchangeId, this.feed.symbol, this.feed.getTimeframe(), maxPeriod)
+        if (this.maxPeriod > 0) {
+            let datas = await this.feed?.fetchHistoricalOHLCV(this.feed.exchangeId, this.feed.symbol, this.feed.getTimeframe(), this.maxPeriod)
             if (datas) {
                 for (const data of datas) {
+                    this.klines.push({ symbol: this.feed!.symbol, timeframe: this.feed!.getTimeframe(), candle: data });
                     for (const indicator of this.indicators.values()) {
                         indicator.update(data);
+                    }
+                    if (this.klines.length > this.maxPeriod) {
+                        this.klines.shift();
                     }
                 }
             }
@@ -115,5 +124,22 @@ export abstract class BaseStrategy {
 
     public getIndicators(): Map<string, Indicator> {
         return this.indicators;
+    }
+
+    public mergeKlines(klines: KlineData[], factor: number): Candle[] {
+        const merged: Candle[] = [];
+        for (let i = 0; i < klines.length; i += factor) {
+            const slice = klines.slice(i, i + factor);
+            if (slice.length < factor) break;
+            merged.push({
+                timestamp: slice[0].candle.timestamp,
+                open: slice[0].candle.open,
+                high: Math.max(...slice.map(k => k.candle.high)),
+                low: Math.min(...slice.map(k => k.candle.low)),
+                close: slice[slice.length - 1].candle.close,
+                volume: slice.reduce((s, k) => s + k.candle.volume, 0)
+            });
+        }
+        return merged;
     }
 }

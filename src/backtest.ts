@@ -21,7 +21,8 @@ import { DBStatistics } from "./statistics/db-statistics";
 
 
 const engine = new Engine({
-  feed: [BacktestFeed, 'ETH/USDT', '5m', '/Users/necklace/Downloads/ETHUSDT-5m-2025-01.csv','1h'],
+  feed: [BacktestFeed, 'ETH/USDT', '1h', './test/merged_ETHUSDT_1h_2023-2024.csv','8h'],
+  // feed: [BacktestFeed, 'ETH/USDT', '5m', '/Users/necklace/Downloads/ETHUSDT-5m-2025-01.csv','1h'],
   statistics: [Statistics],
   broker: [MockBroker, { "ETH": 0.2, "USDT": 1000 }, new PercentCommission(0.001)],
   strategies: [[Polymeric]],

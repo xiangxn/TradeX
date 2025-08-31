@@ -13,7 +13,9 @@ export function getAggregateMs(aggregateTimeframe: string): number {
         case '1h': return 60 * 60 * 1000
         case '2h': return 2 * 60 * 60 * 1000
         case '4h': return 4 * 60 * 60 * 1000
+        case '8h': return 8 * 60 * 60 * 1000
         case '1d': return 24 * 60 * 60 * 1000
+        case '1w': return 7 * 24 * 60 * 60 * 1000
         default: throw new Error('Unsupported aggregate timeframe')
     }
 }

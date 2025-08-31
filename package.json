@@ -8,21 +8,26 @@
     "build": "tsc",
     "clean": "rm -rf dist && rm -rf logs",
     "show": "ts-node src/report.ts",
-    "test:static":" ts-node test/test-statistics.ts"
+    "test:static": " ts-node test/test-statistics.ts",
+    "download": "ts-node test/download.ts"
   },
   "packageManager": "yarn@4.5.2",
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
     "@types/express": "^5",
+    "@types/fs-extra": "^11",
     "@types/global-agent": "^3",
     "@types/node": "^22.14.1",
     "@types/openurl": "^1",
+    "@types/unzipper": "^0",
     "cross-env": "^7.0.3",
     "express": "^5.1.0",
+    "fs-extra": "^11.3.1",
     "global-agent": "^3.0.0",
     "openurl": "^1.1.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "unzipper": "^0.12.3"
   },
   "dependencies": {
     "better-sqlite3": "^12.2.0",

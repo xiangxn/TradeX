@@ -17,3 +17,6 @@ logs/*
 node_modules
 data/*
 !data/.gitkeep
+
+.ethusdt_1h_work
+test/*.csv
